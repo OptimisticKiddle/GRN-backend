@@ -7,14 +7,12 @@ class OverallData(Base):
     __tablename__ = "overall_data"
 
     id = Column(Integer, primary_key=True, nullable=False)
-    pb_gene = Column(String)
-    pb_ensembl = Column(String)
-    n_sample = Column(Integer)
-    celline = Column(String)
-    method = Column(String)
-    conditions = Column(String)
-    accession = Column(String)
-    datasource = Column(String)
+    gsm = Column(String)
+    gse = Column(String)
+    organism = Column(Integer)
+    sample_source = Column(String)
+    sample_type = Column(String)
+
 
 
 class DiffPeaks(Base):

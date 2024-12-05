@@ -36,32 +36,47 @@ def get_order_attr(model_name: str, seq: object):
                 order_attr = seq_key if val == 1 else desc(seq_key)
     return order_attr
 
+'''
+主要接口：
+
+功能1. 返回表格数据: 
+	1.1 根据用户筛选，返回符合条件的数据集/实验。 （输入：筛选参数）√
+	1.2 BASE_GRN等数据下载。(输入：数据集/实验 的ID) √
+	
+功能2. 返回可视化图片:
+	2.1 对于某个实验，返回其可视化图片。若该实验拥有扰动数据,则一并返回refine过程中的可视化图片。(输入：数据集/实验 的ID)
+	2.2 图片下载。(输入：图片 ID)
+
+功能3. GRN refine:
+	3.1 用户上传扰动数据。 (输入:WT/KO数据)
+	3.2 GRN_refine。(输入:扰动数据，数据集/实验 的ID)
+	3.3 下载经refine后的GRN。 (输入：数据集/实验 的ID、一个flag,标识下载的是BaseGRN还是RefineGRN)
+
+
+项目进度：
+
+静态页面(98%,交互设计完毕,样式优化放到最后进行)
+功能1 (50%) 
+功能2 (0%)  
+功能3 (0%)  
 
 '''
-db查询操作
-'''
-
-
 # 获取总体overall_data
 def get_overall_data(db: Session, browser_filter: BrowserFilter = None, paging: Paging = None) -> (Query, int):
     filters = []
     if browser_filter is not None:
         if browser_filter.id is not None:
             filters.append(overall_data.id == browser_filter.id)
-        if browser_filter.pb_gene is not None:
-            filters.append(overall_data.pb_gene.like(f'%{browser_filter.pb_gene}%'))
-        if browser_filter.pb_ensembl is not None:
-            filters.append(overall_data.pb_ensembl.like(f'%{browser_filter.pb_ensembl}%'))
-        if browser_filter.celline is not None:
-            filters.append(overall_data.celline.like(f'%{browser_filter.celline}%'))
-        if browser_filter.method is not None:
-            filters.append(overall_data.method.like(f'%{browser_filter.method}%'))
-        if browser_filter.datasource is not None:
-            filters.append(overall_data.datasource.like(f'%{browser_filter.datasource}%'))
-        if browser_filter.n_sample_greater is not None:
-            filters.append(overall_data.n_sample >= browser_filter.n_sample_greater)
-        if browser_filter.n_sample_less is not None:
-            filters.append(overall_data.n_sample <= browser_filter.n_sample_less)
+        if browser_filter.gse is not None:
+            filters.append(overall_data.gse.like(f'%{browser_filter.gse}%'))
+        if browser_filter.gsm is not None:
+            filters.append(overall_data.gsm.like(f'%{browser_filter.gsm}%'))
+        if browser_filter.organism is not None:
+            filters.append(overall_data.organism.like(f'%{browser_filter.organism}%'))
+        if browser_filter.sample_source is not None:
+            filters.append(overall_data.sample_source.like(f'%{browser_filter.sample_source}%'))
+        if browser_filter.sample_type is not None:
+            filters.append(overall_data.sample_type.like(f'%{browser_filter.sample_type}%'))
 
     paging_start, paging_len = get_paging_attrs(paging)
 

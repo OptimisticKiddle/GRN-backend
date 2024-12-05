@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import Depends, FastAPI, Body, HTTPException
+from fastapi import Depends, FastAPI, Body, HTTPException,Response
 from sqlalchemy.orm import Session
 # from fastapi.responses import FileResponse
 from starlette.responses import FileResponse
@@ -13,6 +13,8 @@ import os, tarfile
 import paramiko
 from scp import SCPClient, SCPException
 import subprocess
+import shutil
+import os
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -27,11 +29,41 @@ def get_db():
     finally:
         db.close()
 
+'''
+主要接口：
 
+功能1. 返回表格数据: 
+	1.1 根据用户筛选，返回符合条件的数据集/实验。 （输入：筛选参数）√
+	1.2 BASE_GRN等数据下载。(输入：文件名，数据集/实验 的ID) √
+	
+功能2. 返回可视化图片:
+	2.1 对于某个实验，返回其可视化图片。若该实验拥有扰动数据,则一并返回refine过程中的可视化图片。(输入：数据集/实验 的ID)
+	2.2 图片下载。(输入：图片 ID)
+
+功能3. GRN refine:
+	3.1 用户上传扰动数据。 (输入:WT/KO数据)
+	3.2 GRN_refine。(输入:扰动数据，数据集/实验 的ID)
+	3.3 下载经refine后的GRN。 (输入：数据集/实验 的ID、一个flag,标识下载的是BaseGRN还是RefineGRN)
+
+
+项目进度：
+
+静态页面(98%,交互设计完毕,样式优化放到最后进行)
+功能1 (99%) 
+功能2 (0%)  
+功能3 (0%)  
+
+'''
 '''
 get系列
 '''
-
+@app.get("/download/{filename}")
+async def download_file(filename: str):
+    print(filename)
+    headers = {
+               'Content-Disposition': f'attachment; filename="{filename}"'
+           }
+    return FileResponse(path='./scATACdb/GRN.mm',headers=headers)
 
 @app.post("/get_overall_data", response_model=TableDataResponse)
 def get_overall_data(db: Session = Depends(get_db), filter: BrowserFilter = None, paging: Paging = None):
@@ -39,8 +71,8 @@ def get_overall_data(db: Session = Depends(get_db), filter: BrowserFilter = None
     overall_data = TableDataResponse(data=data, records_sum=records_sum)
 
     for i in range(len(overall_data.data)):
-        GSE_id = overall_data.data[i].accession.split('acc=')[1]
-        overall_data.data[i].accession = f"<a href='{overall_data.data[i].accession}' target='_blank'>{GSE_id}</a>"
+        overall_data.data[i].gse = f"<a href='https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={overall_data.data[i].gse}' target='_blank'>{overall_data.data[i].gse}</a>"
+        overall_data.data[i].gsm = f"<a href='https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={overall_data.data[i].gsm}' target='_blank'>{overall_data.data[i].gsm}</a>"
     return overall_data
 
 

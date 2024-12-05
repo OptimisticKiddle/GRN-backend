@@ -21,15 +21,12 @@ overall_data
 
 # 总体dataset
 class OverallData(BaseModel):
-    id: int
-    pb_gene: str
-    pb_ensembl: str
-    n_sample: int
-    celline: str
-    method: str
-    conditions: str
-    accession: str
-    datasource: str
+    id: int = None
+    gse:str = None
+    gsm: str = None
+    organism: str = None
+    sample_source: str = None
+    sample_type: str = None
 
     class Config:
         orm_mode = True
@@ -37,14 +34,11 @@ class OverallData(BaseModel):
 
 # 无id版本的 overall data
 class OverallDataNoId(BaseModel):
-    pb_gene: str
-    pb_ensembl: str
-    n_sample: int
-    celline: str
-    method: str
-    conditions: str
-    accession: str
-    datasource: str
+    gse:str = None
+    gsm: str = None
+    organism: str = None
+    sample_source: str = None
+    sample_type: str = None
 
     class Config:
         orm_mode = True
@@ -53,14 +47,11 @@ class OverallDataNoId(BaseModel):
 # browser页filter
 class BrowserFilter(BaseModel):
     id: int = None
-    pb_gene: str = None
-    pb_ensembl: str = None
-    n_sample_greater: int = None
-    n_sample_less: int = None
-    celline: str = None
-    method: str = None
-    datasource: str = None
-
+    gse:str = None
+    gsm: str = None
+    organism: str = None
+    sample_source: str = None
+    sample_type: str = None
 
 # 单个数据 resp
 class SingleDataResponse(BaseModel):

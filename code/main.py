@@ -15,11 +15,11 @@ from scp import SCPClient, SCPException
 import subprocess
 import shutil
 import os
-
+from fastapi.staticfiles import StaticFiles
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-
+app.mount("/static", StaticFiles(directory="../static"), name="static")
 
 # Dependency
 def get_db():
@@ -32,9 +32,9 @@ def get_db():
 '''
 主要接口：
 
-功能1. 返回表格数据: 
-	1.1 根据用户筛选，返回符合条件的数据集/实验。 （输入：筛选参数）√
-	1.2 BASE_GRN等数据下载。(输入：文件名，数据集/实验 的ID) √
+√功能1. 返回表格数据: 
+	1.1 根据用户筛选，返回符合条件的数据集/实验。 （输入：筛选参数）
+	1.2 BASE_GRN下载。(输入：文件名，数据集/实验 的ID) 
 	
 功能2. 返回可视化图片:
 	2.1 对于某个实验，返回其可视化图片。若该实验拥有扰动数据,则一并返回refine过程中的可视化图片。(输入：数据集/实验 的ID)
@@ -57,13 +57,13 @@ def get_db():
 '''
 get系列
 '''
-@app.get("/download/{filename}")
-async def download_file(filename: str):
-    print(filename)
+@app.get("/download/{gse_id}/{gsm_id}/{filename}")
+async def download_file(gse_id:str,gsm_id:str,filename: str):
     headers = {
                'Content-Disposition': f'attachment; filename="{filename}"'
            }
-    return FileResponse(path='./scATACdb/GRN.mm',headers=headers)
+    path = '../static/GSE' + gse_id + "/GSM" + gsm_id + "/" + filename
+    return FileResponse(path=path,headers=headers)
 
 @app.post("/get_overall_data", response_model=TableDataResponse)
 def get_overall_data(db: Session = Depends(get_db), filter: BrowserFilter = None, paging: Paging = None):

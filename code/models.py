@@ -12,6 +12,8 @@ class OverallData(Base):
     organism = Column(Integer)
     sample_source = Column(String)
     sample_type = Column(String)
+    cell_type = Column(String)
+    tissue = Column(String)
 
 
 

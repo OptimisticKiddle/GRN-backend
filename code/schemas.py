@@ -27,6 +27,8 @@ class OverallData(BaseModel):
     organism: str = None
     sample_source: str = None
     sample_type: str = None
+    cell_type: str = None
+    tissue: str = None
 
     class Config:
         orm_mode = True
@@ -39,6 +41,8 @@ class OverallDataNoId(BaseModel):
     organism: str = None
     sample_source: str = None
     sample_type: str = None
+    cell_type: str = None
+    tissue: str = None
 
     class Config:
         orm_mode = True
@@ -52,6 +56,8 @@ class BrowserFilter(BaseModel):
     organism: str = None
     sample_source: str = None
     sample_type: str = None
+    cell_type: str = None
+    tissue: str = None
 
 # 单个数据 resp
 class SingleDataResponse(BaseModel):

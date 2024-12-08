@@ -70,9 +70,9 @@ def get_overall_data(db: Session = Depends(get_db), filter: BrowserFilter = None
     data, records_sum = crud.get_overall_data(db, filter, paging)
     overall_data = TableDataResponse(data=data, records_sum=records_sum)
 
-    for i in range(len(overall_data.data)):
-        overall_data.data[i].gse = f"<a href='https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={overall_data.data[i].gse}' target='_blank'>{overall_data.data[i].gse}</a>"
-        overall_data.data[i].gsm = f"<a href='https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={overall_data.data[i].gsm}' target='_blank'>{overall_data.data[i].gsm}</a>"
+    # gfor i in range(len(overall_data.data)):
+    #     overall_data.data[i].gse = f"<a href='https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={overall_data.data[i].gse}' target='_blank'>{overall_data.data[i].gse}</a>"
+    #     overall_data.data[i].gsm = f"<a href='https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={overall_data.data[i].sm}' target='_blank'>{overall_data.data[i].gsm}</a>"
     return overall_data
 
 

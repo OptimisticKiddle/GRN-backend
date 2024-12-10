@@ -162,16 +162,16 @@ def get_treat_peak_data_range(db: Session = Depends(get_db), id: int = Body(embe
     return data
 
 
-@app.get("/get_datasource_enum", response_model=EnumDataResp)
-def get_datasource_enum(db: Session = Depends(get_db)):
+@app.get("/get_samplesource_enum", response_model=EnumDataResp)
+def get_samplesource_enum(db: Session = Depends(get_db)):
     data = crud.get_datasource_enum(db)
     datasource_enum_list = [d[0] for d in data]
     enum_resp = EnumDataResp(data=datasource_enum_list)
     return enum_resp
 
 
-@app.get("/get_method_enum", response_model=EnumDataResp)
-def get_method_enum(db: Session = Depends(get_db)):
+@app.get("/get_sampletype_enum", response_model=EnumDataResp)
+def get_sampletype_enum(db: Session = Depends(get_db)):
     data = crud.get_method_enum(db)
     enum_list = [d[0] for d in data]
     enum_resp = EnumDataResp(data=enum_list)

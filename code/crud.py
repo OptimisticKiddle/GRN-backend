@@ -68,13 +68,13 @@ def get_overall_data(db: Session, browser_filter: BrowserFilter = None, paging: 
 
 # 获取数据源枚举值
 def get_datasource_enum(db: Session) -> Query:
-    enum_data = db.query(distinct(overall_data.datasource)).all()
+    enum_data = db.query(distinct(overall_data.sample_source)).all()
     return enum_data
 
 
 # 获取敲除方法枚举值
 def get_method_enum(db: Session) -> Query:
-    enum_data = db.query(distinct(overall_data.method)).all()
+    enum_data = db.query(distinct(overall_data.sample_type)).all()
     return enum_data
 
 

@@ -19,7 +19,7 @@ from fastapi.staticfiles import StaticFiles
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="../static"), name="static")
+app.mount("/api/static", StaticFiles(directory="../static"), name="static")
 
 # Dependency
 def get_db():
@@ -57,7 +57,7 @@ def get_db():
 '''
 get系列
 '''
-@app.get("/download/{gse_id}/{gsm_id}/{filename}")
+@app.get("/api/download/{gse_id}/{gsm_id}/{filename}")
 async def download_file(gse_id:str,gsm_id:str,filename: str):
     headers = {
                'Content-Disposition': f'attachment; filename="{filename}"'
@@ -65,7 +65,7 @@ async def download_file(gse_id:str,gsm_id:str,filename: str):
     path = '../static/GSE' + gse_id + "/GSM" + gsm_id + "/" + filename
     return FileResponse(path=path,headers=headers)
 
-@app.post("/get_overall_data", response_model=TableDataResponse)
+@app.post("/api/get_overall_data", response_model=TableDataResponse)
 def get_overall_data(db: Session = Depends(get_db), filter: BrowserFilter = None, paging: Paging = None):
     data, records_sum = crud.get_overall_data(db, filter, paging)
     overall_data = TableDataResponse(data=data, records_sum=records_sum)
@@ -162,7 +162,7 @@ def get_treat_peak_data_range(db: Session = Depends(get_db), id: int = Body(embe
     return data
 
 
-@app.get("/get_samplesource_enum", response_model=EnumDataResp)
+@app.get("/api/get_samplesource_enum", response_model=EnumDataResp)
 def get_samplesource_enum(db: Session = Depends(get_db)):
     data = crud.get_datasource_enum(db)
     datasource_enum_list = [d[0] for d in data]
@@ -170,7 +170,7 @@ def get_samplesource_enum(db: Session = Depends(get_db)):
     return enum_resp
 
 
-@app.get("/get_sampletype_enum", response_model=EnumDataResp)
+@app.get("/api/get_sampletype_enum", response_model=EnumDataResp)
 def get_sampletype_enum(db: Session = Depends(get_db)):
     data = crud.get_method_enum(db)
     enum_list = [d[0] for d in data]

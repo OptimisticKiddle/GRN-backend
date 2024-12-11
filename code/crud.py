@@ -66,9 +66,28 @@ def get_overall_data(db: Session, browser_filter: BrowserFilter = None, paging: 
     return query_data, records_sum
 
 
-# 获取数据源枚举值
+# 获取sample source枚举值
 def get_datasource_enum(db: Session) -> Query:
     enum_data = db.query(distinct(overall_data.sample_source)).all()
+    return enum_data
+
+# 获取tissue枚举值
+def get_tissue_enum(db: Session,sample_source:str) -> Query:
+    filters = []
+    if len(sample_source) != 0:
+        filters.append(overall_data.sample_source == sample_source)
+    enum_data = db.query(distinct(overall_data.tissue)).filter(*filters).all()
+    return enum_data
+
+# 获取cell type枚举值
+def get_celltype_enum(db: Session,sample_source:str,tissue:str) -> Query:
+    filters = []
+    if len(sample_source) != 0:
+        filters.append(overall_data.sample_source == sample_source)
+    if len(tissue) != 0:
+        filters.append(overall_data.tissue == tissue)
+		    
+    enum_data = db.query(distinct(overall_data.cell_type)).filter(*filters).all()
     return enum_data
 
 

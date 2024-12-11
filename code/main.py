@@ -29,34 +29,7 @@ def get_db():
     finally:
         db.close()
 
-'''
-主要接口：
 
-√功能1. 返回表格数据: 
-	1.1 根据用户筛选，返回符合条件的数据集/实验。 （输入：筛选参数）
-	1.2 BASE_GRN下载。(输入：文件名，数据集/实验 的ID) 
-	
-功能2. 返回可视化图片:
-	2.1 对于某个实验，返回其可视化图片。若该实验拥有扰动数据,则一并返回refine过程中的可视化图片。(输入：数据集/实验 的ID)
-	2.2 图片下载。(输入：图片 ID)
-
-功能3. GRN refine:
-	3.1 用户上传扰动数据。 (输入:WT/KO数据)
-	3.2 GRN_refine。(输入:扰动数据，数据集/实验 的ID)
-	3.3 下载经refine后的GRN。 (输入：数据集/实验 的ID、一个flag,标识下载的是BaseGRN还是RefineGRN)
-
-
-项目进度：
-
-静态页面(98%,交互设计完毕,样式优化放到最后进行)
-功能1 (99%) 
-功能2 (0%)  
-功能3 (0%)  
-
-'''
-'''
-get系列
-'''
 @app.get("/api/download/{gse_id}/{gsm_id}/{filename}")
 async def download_file(gse_id:str,gsm_id:str,filename: str):
     headers = {
@@ -165,6 +138,22 @@ def get_treat_peak_data_range(db: Session = Depends(get_db), id: int = Body(embe
 @app.get("/api/get_samplesource_enum", response_model=EnumDataResp)
 def get_samplesource_enum(db: Session = Depends(get_db)):
     data = crud.get_datasource_enum(db)
+    datasource_enum_list = [d[0] for d in data]
+    enum_resp = EnumDataResp(data=datasource_enum_list)
+    return enum_resp
+
+@app.get("/api/get_tissue_enum", response_model=EnumDataResp)
+def get_tissue_enum(db: Session = Depends(get_db),sample_source:str=''):
+
+    data = crud.get_tissue_enum(db,sample_source)
+    datasource_enum_list = [d[0] for d in data]
+    enum_resp = EnumDataResp(data=datasource_enum_list)
+    return enum_resp
+
+@app.get("/api/get_celltype_enum", response_model=EnumDataResp)
+def get_celltype_enum(db: Session = Depends(get_db),sample_source:str='',tissue:str=''):
+    print('get_celltype_enum: ',sample_source,tissue)
+    data = crud.get_celltype_enum(db,sample_source,tissue)
     datasource_enum_list = [d[0] for d in data]
     enum_resp = EnumDataResp(data=datasource_enum_list)
     return enum_resp

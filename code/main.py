@@ -38,6 +38,12 @@ async def upload(gse_id:str,gsm_id:str,mark:str,file: UploadFile = File(...)):
 
     fn = file.filename
     path = '../static/GSE' + gse_id + "/GSM"  +  gsm_id + "/" + mark + "/"
+    listdir = os.listdir(path)
+    for dirname in listdir:
+            dirname = path + "//" + dirname
+            if os.path.isfile(dirname): # 是文件
+                print(dirname)
+                os.remove(dirname)      # 删除文件
     file_path = os.path.join(path, fn)
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)

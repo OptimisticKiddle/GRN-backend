@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import Depends, FastAPI, Body, HTTPException,Response
+from fastapi import Depends, FastAPI, Body, HTTPException,Response,UploadFile,File
 from sqlalchemy.orm import Session
 # from fastapi.responses import FileResponse
 from starlette.responses import FileResponse
@@ -16,6 +16,7 @@ import subprocess
 import shutil
 import os
 from fastapi.staticfiles import StaticFiles
+
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -29,6 +30,18 @@ def get_db():
     finally:
         db.close()
 
+@app.post("/api/upload/{gse_id}/{gsm_id}/{mark}")
+async def upload(gse_id:str,gsm_id:str,mark:str,file: UploadFile = File(...)):
+    file_extension = file.filename.split(".")[-1]
+    if file_extension.lower()!= "csv":
+        return {"message": "Please upload files in CSV format!"}
+
+    fn = file.filename
+    path = '../static/GSE' + gse_id + "/GSM"  +  gsm_id + "/" + mark + "/"
+    file_path = os.path.join(path, fn)
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    return {"message": "Upload Successful"}
 
 @app.get("/api/download/{gse_id}/{gsm_id}/{filename}")
 async def download_file(gse_id:str,gsm_id:str,filename: str):

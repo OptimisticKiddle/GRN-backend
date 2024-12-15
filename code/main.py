@@ -6,6 +6,7 @@ from starlette.responses import FileResponse
 import sys
 import crud
 import models
+import grn_refine
 from database import SessionLocal, engine
 from schemas import *
 import pandas
@@ -29,14 +30,28 @@ def get_db():
         yield db
     finally:
         db.close()
-
+@app.get("/api/refine/{gse_id}/{gsm_id}")
+def refine(gse_id:str,gsm_id:str):
+    path = '../static/GSE' + gse_id + "/GSM"  +  gsm_id + "/refine/"
+    listdir = os.listdir(path)
+    for dirname in listdir:
+            dirname = path + "//" + dirname
+            if os.path.isfile(dirname): # 是文件
+                print(dirname)
+                os.remove(dirname)      # 删除文件
+    grn_refine.grnRefine(gse_id,gsm_id)
+    return {"message": "Refine Successful"}
 @app.post("/api/upload/{gse_id}/{gsm_id}/{mark}")
-async def upload(gse_id:str,gsm_id:str,mark:str,file: UploadFile = File(...)):
+def upload(gse_id:str,gsm_id:str,mark:str,file: UploadFile = File(...)):
     file_extension = file.filename.split(".")[-1]
     if file_extension.lower()!= "csv":
         return {"message": "Please upload files in CSV format!"}
 
-    fn = file.filename
+    fn = ''
+    if mark == 'WT':
+        fn = 'wt_avg_expr_by_cluster.csv'
+    else:
+        fn = 'ko_avg_expr_by_cluster.csv'
     path = '../static/GSE' + gse_id + "/GSM"  +  gsm_id + "/" + mark + "/"
     listdir = os.listdir(path)
     for dirname in listdir:
@@ -50,11 +65,12 @@ async def upload(gse_id:str,gsm_id:str,mark:str,file: UploadFile = File(...)):
     return {"message": "Upload Successful"}
 
 @app.get("/api/download/{gse_id}/{gsm_id}/{filename}")
-async def download_file(gse_id:str,gsm_id:str,filename: str):
+def download_file(gse_id:str,gsm_id:str,filename: str):
     headers = {
                'Content-Disposition': f'attachment; filename="{filename}"'
            }
-    path = '../static/GSE' + gse_id + "/GSM" + gsm_id + "/" + filename
+    nameList = ['PerformanceEvaluation.png','Losses.png','Distances.png','refined_GRN.npy']
+    path = '../static/GSE' + gse_id + "/GSM" + gsm_id + ('/' if filename not in nameList else '/refine/') + filename
     return FileResponse(path=path,headers=headers)
 
 @app.post("/api/get_overall_data", response_model=TableDataResponse)

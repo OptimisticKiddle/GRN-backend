@@ -7,6 +7,7 @@ import sys
 import crud
 import models
 import grn_refine
+import plot_network
 from database import SessionLocal, engine
 from schemas import *
 import pandas
@@ -30,6 +31,10 @@ def get_db():
         yield db
     finally:
         db.close()
+@app.get("/api/plot_grn/{gse_id}/{gsm_id}")
+def plot_grn(gse_id:str,gsm_id:str):
+    plot_network.get_refined_network(gse_id,gsm_id)
+    return {"message": "Generate Successful"}
 @app.get("/api/refine/{gse_id}/{gsm_id}")
 def refine(gse_id:str,gsm_id:str):
     path = '../static/GSE' + gse_id + "/GSM"  +  gsm_id + "/refine/"
@@ -40,6 +45,7 @@ def refine(gse_id:str,gsm_id:str):
                 print(dirname)
                 os.remove(dirname)      # 删除文件
     grn_refine.grnRefine(gse_id,gsm_id)
+    plot_network.get_properties(gse_id,gsm_id)
     return {"message": "Refine Successful"}
 @app.post("/api/upload/{gse_id}/{gsm_id}/{mark}")
 def upload(gse_id:str,gsm_id:str,mark:str,file: UploadFile = File(...)):
@@ -69,7 +75,7 @@ def download_file(gse_id:str,gsm_id:str,filename: str):
     headers = {
                'Content-Disposition': f'attachment; filename="{filename}"'
            }
-    nameList = ['PerformanceEvaluation.png','Losses.png','Distances.png','refined_GRN.npy']
+    nameList = ['PerformanceEvaluation.png','Losses.png','Distances.png','refined_GRN.npy','refined_GRN_network.html']
     path = '../static/GSE' + gse_id + "/GSM" + gsm_id + ('/' if filename not in nameList else '/refine/') + filename
     return FileResponse(path=path,headers=headers)
 

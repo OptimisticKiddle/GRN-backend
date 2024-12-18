@@ -50,17 +50,17 @@ def refine(gse_id:str,gsm_id:str):
 	env_name = 'r4'
 	try:
 		# 构建激活环境的命令
-		command = f"conda run -n {env_name} Rscript ./GAM_merge.R {gse_id} {gsm_id}"
+		command = f"conda run -n {env_name} R -f GAM_merge.R --args {gse_id} {gsm_id}"
 		# 使用subprocess调用命令
-		subprocess.run(command, shell=True, check=True)
+		subprocess.run(command, shell=True)
 		print(f"Successfully merged")
 	except subprocess.CalledProcessError as e:
 		print(f"Error: {e}")
 		return {"message": "Refine failed"}
     
 	grn_refine.grnRefine(gse_id,gsm_id)
-	print(f"Successfully get")
 	plot_network.get_properties(gse_id,gsm_id)
+	print(f"Successfully get")
 	return {"message": "Refine Successful"}
 @app.post("/api/upload/{gse_id}/{gsm_id}/{mark}")
 def upload(gse_id:str,gsm_id:str,mark:str,file: UploadFile = File(...)):

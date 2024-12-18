@@ -12,9 +12,14 @@ library(AnnotationHub) # 主要用于基因注释
 library(irlba)
 library(dplyr)
 library(future)
-args<-commandArgs(T)
-args[1]
-args[2]
+# lines <- readLines("data.txt")
+# gse <- lines[1]
+# gsm <- lines[2]
+# print(gse)
+# print(gsm)
+args <- commandArgs(trailingOnly = TRUE)
+print(args[1])
+print(args[2])
 # 设置下输出图形大小
 options(repr.plot.width = 15, repr.plot.height =9)
 plan("multicore", workers = 32)

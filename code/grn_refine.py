@@ -25,8 +25,8 @@ def grnRefine(gse_id:str,gsm_id:str):
 	device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")	
 	# 各文件路径
 	# wt、ko 的gene by cluster格式的GAM
-	wt_csv_path = basePath + '/WT/wt_avg_expr_by_cluster.csv'
-	ko_csv_path = basePath + '/KO/ko_avg_expr_by_cluster.csv'
+	wt_csv_path = basePath + '/refine/wt_avg_expr_by_cluster.csv'
+	ko_csv_path = basePath + '/refine/ko_avg_expr_by_cluster.csv'
 	GRN_path = basePath + '/GRN.mm'
 	gene_name = ["Tet2"] # 涉及到的敲除gene symbol 
 	num_iterations = 2  # 模拟扰动效应 传播次数 默认2
@@ -250,7 +250,7 @@ def grnRefine(gse_id:str,gsm_id:str):
 	plt.grid(True)
 
 	plt.savefig(basePath + '/refine/PerformanceEvaluation.png')
-	fig, ax1 = plt.subplots(figsize=(10, 6))
+	fig, ax1 = plt.subplots(figsize=(12, 6))
 
 	# 欧式距离曲线绘制于左侧Y轴
 	color1 = '#0072BD'

@@ -18,6 +18,7 @@ import subprocess
 import shutil
 import os
 from fastapi.staticfiles import StaticFiles
+import subprocess
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -31,33 +32,47 @@ def get_db():
         yield db
     finally:
         db.close()
+        
+
 @app.get("/api/plot_grn/{gse_id}/{gsm_id}")
 def plot_grn(gse_id:str,gsm_id:str):
     plot_network.get_refined_network(gse_id,gsm_id)
     return {"message": "Generate Successful"}
 @app.get("/api/refine/{gse_id}/{gsm_id}")
 def refine(gse_id:str,gsm_id:str):
-    path = '../static/GSE' + gse_id + "/GSM"  +  gsm_id + "/refine/"
-    listdir = os.listdir(path)
-    for dirname in listdir:
-            dirname = path + "//" + dirname
-            if os.path.isfile(dirname): # 是文件
-                print(dirname)
-                os.remove(dirname)      # 删除文件
-    grn_refine.grnRefine(gse_id,gsm_id)
-    plot_network.get_properties(gse_id,gsm_id)
-    return {"message": "Refine Successful"}
+	path = '../static/GSE' + gse_id + "/GSM"  +  gsm_id + "/refine/"
+	listdir = os.listdir(path)
+	for dirname in listdir:
+			dirname = path + "//" + dirname
+			if os.path.isfile(dirname): # 是文件
+				print(dirname)
+				os.remove(dirname)      # 删除文件
+	env_name = 'r4'
+	try:
+		# 构建激活环境的命令
+		command = f"conda run -n {env_name} Rscript ./GAM_merge.R {gse_id} {gsm_id}"
+		# 使用subprocess调用命令
+		subprocess.run(command, shell=True, check=True)
+		print(f"Successfully merged")
+	except subprocess.CalledProcessError as e:
+		print(f"Error: {e}")
+		return {"message": "Refine failed"}
+    
+	grn_refine.grnRefine(gse_id,gsm_id)
+	print(f"Successfully get")
+	plot_network.get_properties(gse_id,gsm_id)
+	return {"message": "Refine Successful"}
 @app.post("/api/upload/{gse_id}/{gsm_id}/{mark}")
 def upload(gse_id:str,gsm_id:str,mark:str,file: UploadFile = File(...)):
     file_extension = file.filename.split(".")[-1]
-    if file_extension.lower()!= "csv":
-        return {"message": "Please upload files in CSV format!"}
+    if file_extension.lower()!= "rds":
+        return {"message": "Please upload files in rds format!"}
 
     fn = ''
     if mark == 'WT':
-        fn = 'wt_avg_expr_by_cluster.csv'
+        fn = 'GAM_WT.rds'
     else:
-        fn = 'ko_avg_expr_by_cluster.csv'
+        fn = 'GAM_KO.rds'
     path = '../static/GSE' + gse_id + "/GSM"  +  gsm_id + "/" + mark + "/"
     listdir = os.listdir(path)
     for dirname in listdir:
@@ -75,8 +90,9 @@ def download_file(gse_id:str,gsm_id:str,filename: str):
     headers = {
                'Content-Disposition': f'attachment; filename="{filename}"'
            }
-    nameList = ['PerformanceEvaluation.png','Losses.png','Distances.png','refined_GRN.npy','refined_GRN_network.html']
-    path = '../static/GSE' + gse_id + "/GSM" + gsm_id + ('/' if filename not in nameList else '/refine/') + filename
+    path = f"../static/GSE{gse_id}/GSM{gsm_id}/refine/"
+    listdir = os.listdir(path)
+    path = '../static/GSE' + gse_id + "/GSM" + gsm_id + ('/' if filename not in listdir else '/refine/') + filename
     return FileResponse(path=path,headers=headers)
 
 @app.post("/api/get_overall_data", response_model=TableDataResponse)

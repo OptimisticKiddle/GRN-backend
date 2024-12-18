@@ -344,7 +344,6 @@ def get_properties(gse_id:str,gsm_id:str):
      # 生成baseGRN并保存节点属性
     base_mm_file = f"{base_path}/GRN.mm"
     base_csv_file = f"{base_path}/GRN_row_names.csv"
-    
     visualize_grn(
         mm_file=base_mm_file,
         csv_file=base_csv_file,
@@ -360,8 +359,8 @@ def get_refined_network(gse_id:str,gsm_id:str):
     learning_rate = 0.001
     reg_lambda = 0.01
     # 读取数据文件
-    wt_csv_path = f"{base_path}/WT/wt_avg_expr_by_cluster.csv"
-    ko_csv_path = f"{base_path}/KO/ko_avg_expr_by_cluster.csv"
+    wt_csv_path = f"{base_path}/refine/wt_avg_expr_by_cluster.csv"
+    ko_csv_path = f"{base_path}/refine/ko_avg_expr_by_cluster.csv"
 
     wt_data = pd.read_csv(wt_csv_path, index_col=0)
     ko_data = pd.read_csv(ko_csv_path, index_col=0)

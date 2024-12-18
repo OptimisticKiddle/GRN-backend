@@ -18,4 +18,4 @@ access_log_format = '%(t)s %(p)s %(h)s "%(r)s" %(s)s %(L)s %(b)s %(f)s" "%(a)s"'
 accesslog = "/data/GRN-backend/code/gunicorn_access.log"
 errorlog = "/data/GRN-backend/code/gunicorn_error.log"
 
-timeout = 360000  # 设置超时时间
+timeout = 900000  # 设置超时时间

@@ -24,7 +24,7 @@ import uuid
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-app.mount("/api/static", StaticFiles(directory="../static"), name="static")
+app.mount("/app/static", StaticFiles(directory="../static"), name="static")
 
 # Dependency
 def get_db():
@@ -60,21 +60,21 @@ def slow_task(task_id:str,gse_id:str,gsm_id:str):
 	plot_network.get_properties(gse_id,gsm_id)
 	tasks[task_id] = "completed"
 
-@app.get("/api/task_status/{task_id}")
+@app.get("/app/task_status/{task_id}")
 async def task_status(task_id: str):
     status = tasks.get(task_id, "not found")
     return {"task_id": task_id, "status": status}
-@app.get("/api/refine/{gse_id}/{gsm_id}")
+@app.get("/app/refine/{gse_id}/{gsm_id}")
 async def refine(gse_id:str,gsm_id:str,background_tasks: BackgroundTasks):
 	task_id = str(uuid.uuid4())
 	tasks[task_id] = "in progress"
 	background_tasks.add_task(slow_task, task_id,gse_id,gsm_id)
 	return {"task_id":task_id}
-@app.get("/api/plot_grn/{gse_id}/{gsm_id}")
+@app.get("/app/plot_grn/{gse_id}/{gsm_id}")
 def plot_grn(gse_id:str,gsm_id:str):
     plot_network.get_refined_network(gse_id,gsm_id)
     return {"message": "Generate Successful"}
-@app.post("/api/upload/{gse_id}/{gsm_id}/{mark}")
+@app.post("/app/upload/{gse_id}/{gsm_id}/{mark}")
 async def upload(gse_id:str,gsm_id:str,mark:str,file: UploadFile = File(...)):
     file_extension = file.filename.split(".")[-1]
     if file_extension.lower()!= "rds":
@@ -97,7 +97,7 @@ async def upload(gse_id:str,gsm_id:str,mark:str,file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
     return {"message": "Upload Successful"}
 
-@app.get("/api/download/{gse_id}/{gsm_id}/{filename}")
+@app.get("/app/download/{gse_id}/{gsm_id}/{filename}")
 def download_file(gse_id:str,gsm_id:str,filename: str):
     headers = {
                'Content-Disposition': f'attachment; filename="{filename}"'
@@ -107,7 +107,7 @@ def download_file(gse_id:str,gsm_id:str,filename: str):
     path = '../static/GSE' + gse_id + "/GSM" + gsm_id + ('/' if filename not in listdir else '/refine/') + filename
     return FileResponse(path=path,headers=headers)
 
-@app.post("/api/get_overall_data", response_model=TableDataResponse)
+@app.post("/app/get_overall_data", response_model=TableDataResponse)
 def get_overall_data(db: Session = Depends(get_db), filter: BrowserFilter = None, paging: Paging = None):
     data, records_sum = crud.get_overall_data(db, filter, paging)
     overall_data = TableDataResponse(data=data, records_sum=records_sum)
@@ -204,14 +204,14 @@ def get_treat_peak_data_range(db: Session = Depends(get_db), id: int = Body(embe
     return data
 
 
-@app.get("/api/get_samplesource_enum", response_model=EnumDataResp)
+@app.get("/app/get_samplesource_enum", response_model=EnumDataResp)
 def get_samplesource_enum(db: Session = Depends(get_db)):
     data = crud.get_datasource_enum(db)
     datasource_enum_list = [d[0] for d in data]
     enum_resp = EnumDataResp(data=datasource_enum_list)
     return enum_resp
 
-@app.get("/api/get_tissue_enum", response_model=EnumDataResp)
+@app.get("/app/get_tissue_enum", response_model=EnumDataResp)
 def get_tissue_enum(db: Session = Depends(get_db),sample_source:str=''):
 
     data = crud.get_tissue_enum(db,sample_source)
@@ -219,7 +219,7 @@ def get_tissue_enum(db: Session = Depends(get_db),sample_source:str=''):
     enum_resp = EnumDataResp(data=datasource_enum_list)
     return enum_resp
 
-@app.get("/api/get_celltype_enum", response_model=EnumDataResp)
+@app.get("/app/get_celltype_enum", response_model=EnumDataResp)
 def get_celltype_enum(db: Session = Depends(get_db),sample_source:str='',tissue:str=''):
     print('get_celltype_enum: ',sample_source,tissue)
     data = crud.get_celltype_enum(db,sample_source,tissue)
@@ -228,7 +228,7 @@ def get_celltype_enum(db: Session = Depends(get_db),sample_source:str='',tissue:
     return enum_resp
 
 
-@app.get("/api/get_sampletype_enum", response_model=EnumDataResp)
+@app.get("/app/get_sampletype_enum", response_model=EnumDataResp)
 def get_sampletype_enum(db: Session = Depends(get_db)):
     data = crud.get_method_enum(db)
     enum_list = [d[0] for d in data]

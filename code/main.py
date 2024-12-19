@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import Depends, FastAPI, Body, HTTPException,Response,UploadFile,File
+from fastapi import Depends, FastAPI, Body, HTTPException,Response,UploadFile,File,BackgroundTasks
 from sqlalchemy.orm import Session
 # from fastapi.responses import FileResponse
 from starlette.responses import FileResponse
@@ -19,6 +19,7 @@ import shutil
 import os
 from fastapi.staticfiles import StaticFiles
 import subprocess
+import uuid
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -34,12 +35,10 @@ def get_db():
         db.close()
         
 
-@app.get("/api/plot_grn/{gse_id}/{gsm_id}")
-def plot_grn(gse_id:str,gsm_id:str):
-    plot_network.get_refined_network(gse_id,gsm_id)
-    return {"message": "Generate Successful"}
-@app.get("/api/refine/{gse_id}/{gsm_id}")
-def refine(gse_id:str,gsm_id:str):
+# 存储任务状态的字典
+tasks = {}
+def slow_task(task_id:str,gse_id:str,gsm_id:str):
+	print('task start')
 	path = '../static/GSE' + gse_id + "/GSM"  +  gsm_id + "/refine/"
 	listdir = os.listdir(path)
 	for dirname in listdir:
@@ -56,14 +55,27 @@ def refine(gse_id:str,gsm_id:str):
 		print(f"Successfully merged")
 	except subprocess.CalledProcessError as e:
 		print(f"Error: {e}")
-		return {"message": "Refine failed"}
-    
+
 	grn_refine.grnRefine(gse_id,gsm_id)
 	plot_network.get_properties(gse_id,gsm_id)
-	print(f"Successfully get")
-	return {"message": "Refine Successful"}
+	tasks[task_id] = "completed"
+
+@app.get("/api/task_status/{task_id}")
+async def task_status(task_id: str):
+    status = tasks.get(task_id, "not found")
+    return {"task_id": task_id, "status": status}
+@app.get("/api/refine/{gse_id}/{gsm_id}")
+async def refine(gse_id:str,gsm_id:str,background_tasks: BackgroundTasks):
+	task_id = str(uuid.uuid4())
+	tasks[task_id] = "in progress"
+	background_tasks.add_task(slow_task, task_id,gse_id,gsm_id)
+	return {"task_id":task_id}
+@app.get("/api/plot_grn/{gse_id}/{gsm_id}")
+def plot_grn(gse_id:str,gsm_id:str):
+    plot_network.get_refined_network(gse_id,gsm_id)
+    return {"message": "Generate Successful"}
 @app.post("/api/upload/{gse_id}/{gsm_id}/{mark}")
-def upload(gse_id:str,gsm_id:str,mark:str,file: UploadFile = File(...)):
+async def upload(gse_id:str,gsm_id:str,mark:str,file: UploadFile = File(...)):
     file_extension = file.filename.split(".")[-1]
     if file_extension.lower()!= "rds":
         return {"message": "Please upload files in rds format!"}
